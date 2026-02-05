@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Cadastros</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+
+        .loading {
+            font-style: italic;
+            color: #666;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Cadastros Realizados</h1>
+        <a href="/api/admin/export" class="btn" target="_blank">Exportar para Excel (CSV)</a>
+
+        <div id="status" class="loading">Carregando dados...</div>
+
+        <table id="tabelaCadastros" style="display:none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>CPF</th>
+                    <th>Cidade</th>
+                    <th>Profissão</th>
+                    <th>Cargo Político?</th>
+                    <th>Detalhe Cargo</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyCadastros">
+                <!-- Dados serão inseridos aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function carregarDados() {
+            const statusDiv = document.getElementById('status');
+            const tabela = document.getElementById('tabelaCadastros');
+            const tbody = document.getElementById('tbodyCadastros');
+
+            try {
+                const response = await fetch('/api/admin/cadastros');
+
+                if (response.status === 401) {
+                    statusDiv.innerText = "Acesso Negado. Recarregue a página e faça login.";
+                    statusDiv.className = 'error';
+                    return;
+                }
+
+                if (!response.ok) throw new Error('Erro ao buscar dados');
+
+                const dados = await response.json();
+
+                if (dados.length === 0) {
+                    statusDiv.innerText = "Nenhum cadastro encontrado.";
+                    return;
+                }
+
+                statusDiv.style.display = 'none';
+                tabela.style.display = 'table';
+
+                tbody.innerHTML = dados.map(item => `
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${item.nome}</td>
+                    <td>${item.telefone}</td>
+                    <td>${item.cpf}</td>
+                    <td>${item.cidade}</td>
+                    <td>${item.profissao}</td>
+                    <td>${item.ocupa_cargo_politico ? 'Sim' : 'Não'}</td>
+                    <td>${item.cargo_politico || '-'}</td>
+                    <td>${new Date(item.data_cadastro).toLocaleString('pt-BR')}</td>
+                </tr>
+            `).join('');
+
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "Erro ao carregar dados.";
+                statusDiv.className = 'error';
+            }
+        }
+
+        carregarDados();
+    </script>
+
+</body>
+
+</html>
