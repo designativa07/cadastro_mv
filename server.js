@@ -40,8 +40,11 @@ app.get('/cadastro', (req, res) => {
 // Middleware de Autenticação Básica para Admin
 const adminAuth = (req, res, next) => {
     const user = auth(req);
-    // Usuário: admin, Senha: 123 (Em produção, usar variáveis de ambiente!)
-    if (!user || user.name !== 'postgres' || user.pass !== 'postgres') {
+    // Credenciais do Admin (Env vars ou padrão admin/123)
+    const adminUser = process.env.ADMIN_USER || 'admin';
+    const adminPass = process.env.ADMIN_PASS || '123';
+
+    if (!user || user.name !== adminUser || user.pass !== adminPass) {
         res.statusCode = 401;
         res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
         res.end('Acesso negado');
