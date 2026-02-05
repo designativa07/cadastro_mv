@@ -23,7 +23,19 @@ const pool = new Pool({
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '.'))); // Serve arquivos estáticos (index.html, admin.html)
+
+// Servir arquivos estáticos na raiz e em /cadastro
+app.use(express.static(path.join(__dirname, '.')));
+app.use('/cadastro', express.static(path.join(__dirname, '.')));
+
+// Redirecionar /cadastro para /cadastro/ (com barra no final) para resolver caminhos relativos
+app.get('/cadastro', (req, res) => {
+    if (!req.originalUrl.endsWith('/')) {
+        return res.redirect(req.originalUrl + '/');
+    }
+    next();
+});
+
 
 // Middleware de Autenticação Básica para Admin
 const adminAuth = (req, res, next) => {
@@ -38,8 +50,11 @@ const adminAuth = (req, res, next) => {
     }
 };
 
+// Router para API
+const apiRouter = express.Router();
+
 // Rota para Salvar Cadastro
-app.post('/api/cadastro', async (req, res) => {
+apiRouter.post('/cadastro', async (req, res) => {
     const { nome, telefone, cpf, cep, cidade, profissao, ocupaCargo, cargoPolitico } = req.body;
     const ocupa_cargo_politico = ocupaCargo === 'sim';
     const cargo_politico_val = ocupa_cargo_politico ? cargoPolitico : null;
@@ -66,7 +81,7 @@ app.post('/api/cadastro', async (req, res) => {
 });
 
 // Rota Admin: Listar Cadastros
-app.get('/api/admin/cadastros', adminAuth, async (req, res) => {
+apiRouter.get('/admin/cadastros', adminAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM cadastro_contato ORDER BY data_cadastro DESC');
         res.json(result.rows);
@@ -77,7 +92,7 @@ app.get('/api/admin/cadastros', adminAuth, async (req, res) => {
 });
 
 // Rota Admin: Exportar CSV
-app.get('/api/admin/export', adminAuth, async (req, res) => {
+apiRouter.get('/admin/export', adminAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM cadastro_contato ORDER BY data_cadastro DESC');
         const dados = result.rows;
@@ -99,6 +114,10 @@ app.get('/api/admin/export', adminAuth, async (req, res) => {
         res.status(500).send('Erro ao exportar dados');
     }
 });
+
+// Mount API router
+app.use('/api', apiRouter);
+app.use('/cadastro/api', apiRouter);
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);

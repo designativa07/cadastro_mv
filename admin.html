@@ -76,7 +76,7 @@
 
     <div class="container">
         <h1>Cadastros Realizados</h1>
-        <a href="/api/admin/export" class="btn" target="_blank">Exportar para Excel (CSV)</a>
+        <a href="api/admin/export" class="btn" target="_blank">Exportar para Excel (CSV)</a>
 
         <div id="status" class="loading">Carregando dados...</div>
 
@@ -107,7 +107,7 @@
             const tbody = document.getElementById('tbodyCadastros');
 
             try {
-                const response = await fetch('/api/admin/cadastros');
+                const response = await fetch('api/admin/cadastros');
 
                 if (response.status === 401) {
                     statusDiv.innerText = "Acesso Negado. Recarregue a página e faça login.";
