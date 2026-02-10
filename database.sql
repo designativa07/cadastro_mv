@@ -9,9 +9,9 @@
 CREATE TABLE IF NOT EXISTS cadastro_contato (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
-    telefone VARCHAR(20) NOT NULL,
-    cpf VARCHAR(14) NOT NULL UNIQUE,
-    cep VARCHAR(10) NOT NULL,
+    telefone VARCHAR(50) NOT NULL,
+    cpf VARCHAR(20) NOT NULL UNIQUE,
+    cep VARCHAR(20) NOT NULL,
     cidade VARCHAR(100), -- Tornou-se opcional
     profissao VARCHAR(100),
     ocupa_cargo_politico BOOLEAN NOT NULL DEFAULT FALSE,

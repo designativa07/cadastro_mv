@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, '.')));
 app.use('/cadastro', express.static(path.join(__dirname, '.')));
 
 // Redirecionar /cadastro para /cadastro/ (com barra no final) para resolver caminhos relativos
-app.get('/cadastro', (req, res) => {
+app.get('/cadastro', (req, res, next) => {
     if (!req.originalUrl.endsWith('/')) {
         return res.redirect(req.originalUrl + '/');
     }
@@ -55,6 +55,12 @@ const adminAuth = (req, res, next) => {
 
 // Router para API
 const apiRouter = express.Router();
+
+// Logs para depuração (opcional, remova depois)
+apiRouter.use((req, res, next) => {
+    console.log(`API Request: ${req.method} ${req.url}`);
+    next();
+});
 
 // Rota para Salvar Cadastro
 apiRouter.post('/cadastro', async (req, res) => {
@@ -95,6 +101,39 @@ apiRouter.get('/admin/cadastros', adminAuth, async (req, res) => {
     }
 });
 
+// Rota Admin: Atualizar Cadastro
+apiRouter.put('/admin/cadastro/:id', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    const { nome, telefone, cpf, cep, profissao, ocupa_cargo_politico, cargo_politico, aceita_informacoes } = req.body;
+
+    try {
+        const query = `
+            UPDATE cadastro_contato 
+            SET nome = $1, telefone = $2, cpf = $3, cep = $4, profissao = $5, 
+                ocupa_cargo_politico = $6, cargo_politico = $7, aceita_informacoes = $8
+            WHERE id = $9
+        `;
+        const values = [nome, telefone, cpf, cep, profissao, ocupa_cargo_politico, cargo_politico, aceita_informacoes, id];
+        await pool.query(query, values);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Erro ao atualizar cadastro.' });
+    }
+});
+
+// Rota Admin: Excluir Cadastro
+apiRouter.delete('/admin/cadastro/:id', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM cadastro_contato WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Erro ao excluir cadastro.' });
+    }
+});
+
 // Rota Admin: Exportar CSV
 apiRouter.get('/admin/export', adminAuth, async (req, res) => {
     try {
@@ -118,6 +157,7 @@ apiRouter.get('/admin/export', adminAuth, async (req, res) => {
         res.status(500).send('Erro ao exportar dados');
     }
 });
+
 
 // Mount API router
 app.use('/api', apiRouter);

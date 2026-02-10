@@ -69,6 +69,96 @@
             color: red;
             font-weight: bold;
         }
+
+        .btn-edit {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .btn-edit:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            margin-left: 5px;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .action-btns {
+            display: flex;
+            white-space: nowrap;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 
@@ -76,7 +166,7 @@
 
     <div class="container">
         <h1>Cadastros Realizados</h1>
-        <a href="api/admin/export" class="btn" target="_blank">Exportar para Excel (CSV)</a>
+        <a href="/api/admin/export" class="btn" target="_blank">Exportar para Excel (CSV)</a>
 
         <div id="status" class="loading">Carregando dados...</div>
 
@@ -92,6 +182,7 @@
                     <th>Detalhe Cargo</th>
                     <th>Aceita Info?</th>
                     <th>Data</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody id="tbodyCadastros">
@@ -100,14 +191,85 @@
         </table>
     </div>
 
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Cadastro</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editNome">Nome:</label>
+                    <input type="text" id="editNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTelefone">Telefone:</label>
+                    <input type="text" id="editTelefone" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCpf">CPF:</label>
+                    <input type="text" id="editCpf" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCep">CEP:</label>
+                    <input type="text" id="editCep" required>
+                </div>
+                <div class="form-group">
+                    <label for="editProfissao">Profissão:</label>
+                    <input type="text" id="editProfissao">
+                </div>
+                <div class="form-group">
+                    <label for="editOcupaCargo">Ocupa Cargo Político?</label>
+                    <select id="editOcupaCargo" onchange="toggleEditCargoInput()">
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                    </select>
+                </div>
+                <div id="editCargoDetailGroup" class="form-group">
+                    <label for="editCargoPolitico">Qual cargo?</label>
+                    <input type="text" id="editCargoPolitico">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="editAceitaInfo"> Aceita receber informações
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" style="background-color: #6c757d;"
+                        onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        // Máscaras para o modal de edição
+        document.getElementById('editTelefone').addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        document.getElementById('editCpf').addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
+            e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + (x[3] ? '.' + x[3] : '') + (x[4] ? '-' + x[4] : '');
+        });
+
+        document.getElementById('editCep').addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,5})(\d{0,3})/);
+            e.target.value = !x[2] ? x[1] : x[1] + '-' + x[2];
+        });
+
         async function carregarDados() {
             const statusDiv = document.getElementById('status');
             const tabela = document.getElementById('tabelaCadastros');
             const tbody = document.getElementById('tbodyCadastros');
+            window.listaCadastros = []; // Global para busca no edita
 
             try {
-                const response = await fetch('api/admin/cadastros');
+                const response = await fetch('/api/admin/cadastros');
 
                 if (response.status === 401) {
                     statusDiv.innerText = "Acesso Negado. Recarregue a página e faça login.";
@@ -117,7 +279,11 @@
 
                 if (!response.ok) throw new Error('Erro ao buscar dados');
 
-                const dados = await response.json();
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const dados = isJson ? await response.json() : [];
+
+                if (!isJson) throw new Error('Servidor retornou formato inválido.');
+                window.listaCadastros = dados;
 
                 if (dados.length === 0) {
                     statusDiv.innerText = "Nenhum cadastro encontrado.";
@@ -138,6 +304,10 @@
                     <td>${item.cargo_politico || '-'}</td>
                     <td>${item.aceita_informacoes ? 'Sim' : 'Não'}</td>
                     <td>${new Date(item.data_cadastro).toLocaleString('pt-BR')}</td>
+                    <td class="action-btns">
+                        <button class="btn btn-edit" onclick="openEditModal(${item.id})">Editar</button>
+                        <button class="btn btn-delete" onclick="excluirCadastro(${item.id})">Excluir</button>
+                    </td>
                 </tr>
             `).join('');
 
@@ -147,6 +317,105 @@
                 statusDiv.className = 'error';
             }
         }
+
+        function toggleEditCargoInput() {
+            const select = document.getElementById('editOcupaCargo');
+            const cargoGroup = document.getElementById('editCargoDetailGroup');
+            if (select.value === 'true') {
+                cargoGroup.style.display = 'block';
+            } else {
+                cargoGroup.style.display = 'none';
+                document.getElementById('editCargoPolitico').value = '';
+            }
+        }
+
+        async function excluirCadastro(id) {
+            if (!confirm('Tem certeza que deseja excluir este cadastro?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/cadastro/${id}`, { method: 'DELETE' });
+                const result = response.headers.get('content-type')?.includes('application/json')
+                    ? await response.json()
+                    : { success: false, message: 'Resposta inválida do servidor.' };
+
+                if (result.success) {
+                    alert('Cadastro excluído com sucesso!');
+                    carregarDados();
+                } else {
+                    alert('Erro ao excluir: ' + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro na requisição de exclusão.');
+            }
+        }
+
+        function openEditModal(id) {
+            const item = window.listaCadastros.find(c => c.id === id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('editNome').value = item.nome;
+            document.getElementById('editTelefone').value = item.telefone;
+            document.getElementById('editCpf').value = item.cpf;
+            document.getElementById('editCep').value = item.cep;
+            document.getElementById('editProfissao').value = item.profissao || '';
+            document.getElementById('editOcupaCargo').value = item.ocupa_cargo_politico.toString();
+            document.getElementById('editCargoPolitico').value = item.cargo_politico || '';
+            document.getElementById('editAceitaInfo').checked = item.aceita_informacoes;
+
+            toggleEditCargoInput();
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const data = {
+                nome: document.getElementById('editNome').value.trim(),
+                telefone: document.getElementById('editTelefone').value.trim(),
+                cpf: document.getElementById('editCpf').value.trim(),
+                cep: document.getElementById('editCep').value.trim(),
+                profissao: document.getElementById('editProfissao').value.trim(),
+                ocupa_cargo_politico: document.getElementById('editOcupaCargo').value === 'true',
+                cargo_politico: document.getElementById('editCargoPolitico').value.trim(),
+                aceita_informacoes: document.getElementById('editAceitaInfo').checked
+            };
+
+            try {
+                const response = await fetch(`/api/admin/cadastro/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = response.headers.get('content-type')?.includes('application/json')
+                    ? await response.json()
+                    : { success: false, message: 'Resposta inválida do servidor.' };
+
+                if (result.success) {
+                    alert('Cadastro atualizado com sucesso!');
+                    closeModal();
+                    carregarDados();
+                } else {
+                    alert('Erro ao atualizar: ' + (result.message || 'Erro desconhecido.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao enviar atualização.');
+            }
+        });
 
         carregarDados();
     </script>
