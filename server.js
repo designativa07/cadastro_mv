@@ -58,18 +58,19 @@ const apiRouter = express.Router();
 
 // Rota para Salvar Cadastro
 apiRouter.post('/cadastro', async (req, res) => {
-    const { nome, telefone, cpf, cep, cidade, profissao, ocupaCargo, cargoPolitico } = req.body;
+    const { nome, telefone, cpf, cep, profissao, ocupaCargo, cargoPolitico, aceitaInformacoes } = req.body;
     const ocupa_cargo_politico = ocupaCargo === 'sim';
     const cargo_politico_val = ocupa_cargo_politico ? cargoPolitico : null;
+    const aceita_info_val = aceitaInformacoes === 'sim';
 
     try {
         const query = `
             INSERT INTO cadastro_contato 
-            (nome, telefone, cpf, cep, cidade, profissao, ocupa_cargo_politico, cargo_politico)
+            (nome, telefone, cpf, cep, profissao, ocupa_cargo_politico, cargo_politico, aceita_informacoes)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id
         `;
-        const values = [nome, telefone, cpf, cep, cidade, profissao, ocupa_cargo_politico, cargo_politico_val];
+        const values = [nome, telefone, cpf, cep, profissao, ocupa_cargo_politico, cargo_politico_val, aceita_info_val];
 
         const result = await pool.query(query, values);
         res.json({ success: true, id: result.rows[0].id });
@@ -104,7 +105,7 @@ apiRouter.get('/admin/export', adminAuth, async (req, res) => {
             return res.status(404).send('Nenhum dado para exportar');
         }
 
-        const fields = ['id', 'nome', 'telefone', 'cpf', 'cep', 'cidade', 'profissao', 'ocupa_cargo_politico', 'cargo_politico', 'data_cadastro'];
+        const fields = ['id', 'nome', 'telefone', 'cpf', 'cep', 'profissao', 'ocupa_cargo_politico', 'cargo_politico', 'aceita_informacoes', 'data_cadastro'];
         const json2csvParser = new Parser({ fields });
         const csv = json2csvParser.parse(dados);
 

@@ -102,6 +102,26 @@
             max-width: 250px;
             height: auto;
         }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
     </style>
 </head>
 
@@ -132,10 +152,6 @@
                 <input type="text" id="cep" name="cep" placeholder="00000-000" required>
             </div>
 
-            <div class="form-group">
-                <label for="cidade">Cidade:</label>
-                <input type="text" id="cidade" name="cidade" required>
-            </div>
 
             <div class="form-group">
                 <label for="profissao">Profissão:</label>
@@ -154,6 +170,12 @@
             <div class="form-group hidden" id="cargoGroup">
                 <label for="cargoPolitico">Qual cargo?</label>
                 <input type="text" id="cargoPolitico" name="cargoPolitico">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="aceitaInformacoes" name="aceitaInformacoes" value="sim">
+                <label for="aceitaInformacoes">Aceita receber informações do mandato do deputado Marcos Vieira?
+                    <strong>Sim</strong></label>
             </div>
 
             <button type="submit">Enviar</button>

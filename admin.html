@@ -87,10 +87,10 @@
                     <th>Nome</th>
                     <th>Telefone</th>
                     <th>CPF</th>
-                    <th>Cidade</th>
                     <th>Profissão</th>
                     <th>Cargo Político?</th>
                     <th>Detalhe Cargo</th>
+                    <th>Aceita Info?</th>
                     <th>Data</th>
                 </tr>
             </thead>
@@ -133,10 +133,10 @@
                     <td>${item.nome}</td>
                     <td>${item.telefone}</td>
                     <td>${item.cpf}</td>
-                    <td>${item.cidade}</td>
                     <td>${item.profissao}</td>
                     <td>${item.ocupa_cargo_politico ? 'Sim' : 'Não'}</td>
                     <td>${item.cargo_politico || '-'}</td>
+                    <td>${item.aceita_informacoes ? 'Sim' : 'Não'}</td>
                     <td>${new Date(item.data_cadastro).toLocaleString('pt-BR')}</td>
                 </tr>
             `).join('');
